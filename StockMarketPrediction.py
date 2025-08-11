@@ -11,7 +11,7 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from keras.regularizers import l2
 import talib as ta
 
-# 1. Tải và chuẩn bị dữ liệu
+# 1. Chuẩn bị dữ liệu
 sp500 = yf.Ticker("^GSPC")
 sp500_data = sp500.history(period="max")
 sp500_data.drop(["Dividends", "Stock Splits"], axis=1, inplace=True)
@@ -19,7 +19,7 @@ sp500_data["Tomorrow"] = sp500_data["Close"].shift(-1)
 sp500_data["Target"] = (sp500_data["Tomorrow"] > sp500_data["Close"]).astype(int)
 sp500_data = sp500_data.loc["1990-01-01":].copy()
 
-# 2. Thêm các chỉ báo kỹ thuật
+# 2. Các chỉ báo kỹ thuật
 def add_technical_indicators(df):
     # Chỉ báo xu hướng
     df['MA10'] = ta.MA(df['Close'], timeperiod=10)
@@ -41,18 +41,18 @@ def add_technical_indicators(df):
 
 sp500_data = add_technical_indicators(sp500_data)
 
-# 3. Chia dữ liệu theo thời gian (không xáo trộn)
+# 3. Chia dữ liệu theo thời gian (no shuffle)
 split_date = '2020-01-01'
 train = sp500_data.loc[:split_date].copy()
 test = sp500_data.loc[split_date:].copy()
 
-# 4. Chuẩn bị features và target
+# 4. Features và target
 features = ['Open', 'High', 'Low', 'Close', 'Volume', 
             'MA10', 'MA50', 'MA200', 'RSI', 'MACD', 
             'MACD_Signal', 'ATR', 'OBV']
 
 # 5. Tiền xử lý dữ liệu riêng biệt
-scaler = RobustScaler()  # Ít nhạy cảm với ngoại lệ hơn StandardScaler
+scaler = RobustScaler()  
 train_scaled = scaler.fit_transform(train[features])
 test_scaled = scaler.transform(test[features])
 
@@ -67,7 +67,7 @@ def create_sequences(data, targets, window_size=90):
 X_train, y_train = create_sequences(train_scaled, train['Target'], window_size=90)
 X_test, y_test = create_sequences(test_scaled, test['Target'], window_size=90)
 
-# 7. Xây dựng mô hình LSTM cải tiến
+# 7. Xây dựng mô hình BiLSTM
 model = Sequential([
     Bidirectional(LSTM(128, return_sequences=True, 
                       kernel_regularizer=l2(0.001),
