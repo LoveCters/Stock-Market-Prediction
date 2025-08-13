@@ -51,7 +51,7 @@ The model is a **Bidirectional LSTM** network with dropout and L2 regularization
   - Train: Data up to `2020-01-01`
   - Test: Data from `2020-01-01` onwards
   - 20% of the train set is used for validation
-- **Scaling**: `RobustScaler` (less sensitive to outliers)
+- **Scaling**: `RobustScaler` 
 - **Sequence Length**: 90 days
 - **Optimizer**: Adam (`learning_rate=0.0005`)
 - **Callbacks**:
